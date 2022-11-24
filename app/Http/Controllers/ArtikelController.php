@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Artikel;
+use App\Models\Kategori;
 use Illuminate\Http\Request;
 
 class ArtikelController extends Controller
@@ -13,7 +15,9 @@ class ArtikelController extends Controller
      */
     public function index()
     {
-        //
+        $artikel = Artikel::all();
+
+        return view('admin.index_artikel', compact('artikel'));
     }
 
     /**
@@ -23,7 +27,8 @@ class ArtikelController extends Controller
      */
     public function create()
     {
-        //
+        $kategori = Kategori::all();
+        return view('admin.create_artikel', compact('kategori'));
     }
 
     /**
@@ -34,7 +39,18 @@ class ArtikelController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validate = $request->validate([
+            'judul' => 'required|string',
+            'isi' => 'required|string|max:255',
+            'kategori_id' => 'required',
+            'foto' => 'required',
+            'tanggalArtikel' => 'required',
+        ]);
+        $file = $request->file('foto')->store('artikel/foto');
+        $validate['foto'] = $file;
+        Artikel::create($validate);
+
+        return redirect('artikel');
     }
 
     /**
@@ -56,7 +72,10 @@ class ArtikelController extends Controller
      */
     public function edit($id)
     {
-        //
+        $artikel = Artikel::find($id);
+        $kategori = Kategori::all();
+
+        return view('admin.edit_artikel', compact('artikel', 'kategori'));
     }
 
     /**
@@ -68,7 +87,22 @@ class ArtikelController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $artikel = Artikel::find($id);
+        $a = $request->all();
+        
+        try{
+            $file = $request->file('foto')->store('artikel/foto');
+            $a['foto'] = $file;
+            $artikel->update($a);
+
+        }catch(\Throwable $th)
+        {
+            $a['foto'] = $artikel->foto;
+            $artikel->update($a);
+        }
+
+        return redirect('artikel');
+
     }
 
     /**
@@ -79,6 +113,9 @@ class ArtikelController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $artikel = Artikel::find($id);
+        $artikel->delete();
+
+        return redirect('artikel');
     }
 }

@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use Dotenv\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class EditorController extends Controller
 {
@@ -13,7 +16,9 @@ class EditorController extends Controller
      */
     public function index()
     {
-        //
+        $editor = User::all();
+
+        return view('admin.index_editor', compact('editor'));
     }
 
     /**
@@ -23,7 +28,7 @@ class EditorController extends Controller
      */
     public function create()
     {
-        //
+       return view('admin.create_editor');
     }
 
     /**
@@ -34,7 +39,16 @@ class EditorController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validate = $request->validate ([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+        $validate['password'] =  Hash::make($request['password']);
+         
+        User::create($validate);
+
+        return redirect('editor');
     }
 
     /**
@@ -56,7 +70,9 @@ class EditorController extends Controller
      */
     public function edit($id)
     {
-        //
+        $editor = User::find($id);
+
+        return view('admin.edit_editor', compact('editor'));
     }
 
     /**
@@ -68,7 +84,18 @@ class EditorController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $editor = User::find($id);
+        $validate = $request->validate ([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+        $validate['password'] =  Hash::make($request['password']);
+        $editor->update($validate);
+
+        return redirect('editor');
+
+
     }
 
     /**
@@ -79,6 +106,9 @@ class EditorController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $editor = User::find($id);
+        $editor->delete();
+
+        return redirect('editor');
     }
 }
